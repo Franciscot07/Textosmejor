@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Profesional</title>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7fa;
+  color: #333;
+}
+header {
+  background: #ffffff;
+  padding: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#searchBar {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 260px;
+}
+.container {
+  padding: 20px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.card h3 {
+  margin-top: 0;
+  font-size: 18px;
+}
+.table-container {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table th, table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #4a6cf7;
+  color: white;
+  cursor: pointer;
+  margin-right: 10px;
+}
+button:hover {
+  background: #3b57d0;
+}
+.filters {
+  margin-bottom: 20px;
+}
+select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+</style>
+</head>
+<body>
+
+<header>
+  Dashboard Profesional
+  <input id="searchBar" type="text" placeholder="Buscar en la tabla..." onkeyup="searchTable()" />
+</header>
+
+<div class="container">
+
+  <div class="filters">
+    <label><strong>Filtrar por categoría:</strong></label>
+    <select id="filterSelect" onchange="filterCategory()">
+      <option value="todos">Todos</option>
+      <option value="A">Categoría A</option>
+      <option value="B">Categoría B</option>
+      <option value="C">Categoría C</option>
+    </select>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Clientes Totales</h3>
+      <p><strong>1,204</strong></p>
+    </div>
+    <div class="card">
+      <h3>Ventas este mes</h3>
+      <p><strong>$32,890</strong></p>
+    </div>
+    <div class="card">
+      <h3>Nuevos usuarios</h3>
+      <p><strong>89</strong></p>
+    </div>
+    <div class="card">
+      <h3>Tasa de Retención</h3>
+      <p><strong>78%</strong></p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 30px;">
+    <h3>Gráfico de Ventas</h3>
+    <canvas id="chart1" height="120"></canvas>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('chart1');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
+        datasets: [{
+          label: "Ventas ($)",
+          data: [5000, 7200, 6800, 9100, 12000, 15000],
+        }]
+      }
+    });
+  </script>
+
+  <div class="card" style="margin-top: 30px;">
+    <h3>Tabla de Clientes</h3>
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th><th>Nombre</th><th>Categoría</th><th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Ana Torres</td><td>A</td><td>120</td></tr>
+          <tr><td>2</td><td>Juan Pérez</td><td>B</td><td>340</td></tr>
+          <tr><td>3</td><td>Luisa Gómez</td><td>C</td><td>200</td></tr>
+          <tr><td>4</td><td>Carlos Rivas</td><td>A</td><td>150</td></tr>
+          <tr><td>5</td><td>Jorge Díaz</td><td>B</td><td>90</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <button onclick="exportCSV()">Exportar CSV</button>
+    <button onclick="exportPDF()">Exportar PDF</button>
+  </div>
+
+</div>
+
+<script>
+function searchTable() {
+  const input = document.getElementById("searchBar").value.toLowerCase();
+  const rows = document.querySelectorAll("#dataTable tbody tr");
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none";
+  });
+}
+
+function filterCategory() {
+  const value = document.getElementById("filterSelect").value;
+  const rows = document.querySelectorAll("#dataTable tbody tr");
+  rows.forEach(row => {
+    row.style.display = (value === "todos" || row.children[2].textContent === value) ? "" : "none";
+  });
+}
+
+function exportCSV() {
+  const rows = [...document.querySelectorAll("#dataTable tr")]
+    .map(r => [...r.children].map(td => td.innerText));
+  let csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "clientes.csv";
+  link.click();
+}
+
+function exportPDF() {
+  alert("Exportación a PDF implementable si deseas que genere la versión avanzada.");
+}
+</script>
+
+</body>
+</html>
